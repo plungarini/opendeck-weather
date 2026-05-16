@@ -1,0 +1,30 @@
+{
+	"Name": "Weather",
+	"Description": "Live weather widget powered by OpenWeatherMap",
+	"Author": "plungarini",
+	"Version": "1.9.0",
+	"CodePath": "index.js",
+	"Icon": "icons/plugin",
+	"Category": "Weather",
+	"CategoryIcon": "icons/plugin",
+	"OS": [
+		{ "Platform": "linux" },
+		{ "Platform": "mac", "MinimumVersion": "10.11" },
+		{ "Platform": "windows", "MinimumVersion": "10" }
+	],
+	"Software": {
+		"MinimumVersion": "2.0.0"
+	},
+	"Actions": [
+		{
+			"Icon": "icons/action",
+			"Name": "Weather",
+			"States": [{ "Image": "actionDefaultImage" }],
+			"Controllers": ["Keypad", "Encoder"],
+			"SupportedInMultiActions": true,
+			"Tooltip": "Display live weather from OpenWeatherMap",
+			"UUID": "com.plungarini.weather.action",
+			"PropertyInspectorPath": "pi/index.html"
+		}
+	]
+}

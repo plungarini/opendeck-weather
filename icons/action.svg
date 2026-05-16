@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
+  <circle cx="36" cy="28" r="14" fill="#F9A825" filter="url(#s)"/>
+  <circle cx="44" cy="40" r="13" fill="white" filter="url(#s)"/>
+  <circle cx="34" cy="38" r="12" fill="#E8E8E8" filter="url(#s)"/>
+  <circle cx="24" cy="38" r="10" fill="#E0E0E0" filter="url(#s)"/>
+  <circle cx="54" cy="42" r="9" fill="#E8E8E8" filter="url(#s)"/>
+  <defs><filter id="s"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="rgba(0,0,0,0.2)"/></filter></defs>
+</svg>
