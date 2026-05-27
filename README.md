@@ -22,17 +22,19 @@ Live weather widget for [OpenDeck](https://opendeck.ai) / Elgato Stream Deck pow
 
 ```bash
 # Clone the repo
-git clone <repo-url>
-cd com.plungarini.weather.sdPlugin
+git clone <repo-url> weather
+cd weather
 
 # Install dependencies
 npm install
 
-# Copy to OpenDeck plugins directory
-cp -r . ~/.config/opendeck/plugins/com.plungarini.weather.sdPlugin/
+# Sync into the OpenDeck plugins directory (creates ~/.config/opendeck/plugins/com.plungarini.weather.sdPlugin/)
+npm run sync
 ```
 
 Restart OpenDeck. The Weather action will appear in the action list under the "Weather" category.
+
+> **Note:** The OpenDeck install dir must be named `com.plungarini.weather.sdPlugin` (OpenDeck derives the plugin UUID from the folder name) and must be a **real directory**, not a symlink — OpenDeck's PI server doesn't follow symlinks pointing outside the plugins directory. The dev folder can be named anything.
 
 ## Usage
 
@@ -60,9 +62,12 @@ Restart OpenDeck. The Weather action will appear in the action list under the "W
 
 ```bash
 npm start        # Run the plugin (OpenDeck will launch it)
-npm run log      # Tail plugin.log for debugging
+npm run sync     # Rsync this folder into the OpenDeck install dir
+npm run log      # Tail the installed plugin.log for debugging
 npm run clean    # Remove node_modules for clean reinstall
 ```
+
+Edit files in this folder, run `npm run sync`, then restart OpenDeck (only needed for `index.js` changes — PI HTML reloads on its own when reopened).
 
 The plugin listens on a WebSocket at `ws://127.0.0.1:<port>` and communicates using the OpenDeck/Stream Deck protocol.
 

@@ -14,7 +14,7 @@ function parseArgs() {
   return { port: p, uuid: u, ev: e };
 }
 const { port, uuid, ev } = parseArgs();
-log(`Start port=${port}`);
+log(`Start port=${port} uuid=${uuid} ev=${ev} cwd=${__dirname}`);
 
 let ws = null;
 function send(o) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(o)); }
@@ -150,25 +150,45 @@ async function errImg(ctx, msg) {
   } catch (e) { log("ERR " + e.message); }
 }
 
-async function fetchAndRender(ctx, s) {
-  if (!s.apiKey || !s.city) { errImg(ctx, "Set API key & city"); return; }
+async function loadingImg(ctx) {
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(s.city)}&appid=${s.apiKey}&units=${s.units}`;
+    const cv = createCanvas(W, H); const c = cv.getContext("2d");
+    bgGrad(c, ["#1A1E2E", "#242838"]);
+    text(c, "…", W/2, H/2, 48, "700", "#FFFFFF", "middle");
+    const png = cv.toBuffer("image/png");
+    send({ event: "setImage", context: ctx, payload: { image: "data:image/png;base64," + png.toString("base64") } });
+  } catch {}
+}
+
+async function fetchAndRender(ctx, s) {
+  if (!s.apiKey || !s.city) {
+    log(`Skip fetch ${ctx}: missing ${!s.apiKey ? "apiKey" : ""} ${!s.city ? "city" : ""}`);
+    errImg(ctx, "Set API key & city");
+    return;
+  }
+  const redacted = s.apiKey ? s.apiKey.slice(0,4) + "…" : "";
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(s.city)}&appid=${s.apiKey}&units=${s.units || "metric"}`;
+  log(`Fetch ${ctx} city="${s.city}" units=${s.units} key=${redacted}`);
+  try {
     const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 10000);
     const r = await fetch(url, { signal: ac.signal }); clearTimeout(t);
+    log(`HTTP ${r.status} for ${ctx}`);
     if (!r.ok) throw new Error("HTTP " + r.status);
     const d = await r.json();
-    render(ctx, s, d);
+    await render(ctx, s, d);
   } catch (e) {
+    log(`Fetch err ${ctx}: ${e.message}`);
     const m = e.message.includes("401") ? "Bad key" : e.message.includes("404") ? "City?" : "Offline";
     errImg(ctx, m);
   }
 }
 
 function start(ctx, s) {
+  stop(ctx);
   const ms = Math.max(30, s.refreshInterval || 3600) * 1000;
-  const t = setInterval(() => fetchAndRender(ctx, s), ms);
-  instances[ctx] = { s, t }; log("Start " + ctx);
+  const t = setInterval(() => fetchAndRender(ctx, instances[ctx]?.s || s), ms);
+  instances[ctx] = { s, t };
+  log(`Start ${ctx} interval=${ms}ms city="${s.city}"`);
   fetchAndRender(ctx, s);
 }
 function stop(ctx) { if (instances[ctx]) { clearInterval(instances[ctx].t); delete instances[ctx]; } }
@@ -179,12 +199,50 @@ ws.on("message", (data) => {
   let m; try { m = JSON.parse(data.toString()); } catch { return; }
   log("EVT " + m.event);
   switch (m.event) {
-    case "willAppear": start(m.context, Object.assign({}, DEF, m.payload?.settings || {})); break;
-    case "willDisappear": stop(m.context); break;
-    case "didReceiveSettings": const ns = Object.assign({}, DEF, m.payload?.settings || {}); stop(m.context); start(m.context, ns); break;
-    case "keyDown": if (instances[m.context]) fetchAndRender(m.context, instances[m.context].s); break;
-    case "propertyInspectorDidAppear": const i = instances[m.context]; send({ event: "sendToPropertyInspector", context: m.context, payload: i ? i.s : DEF }); break;
-    case "sendToPlugin": if (m.payload && m.payload.event === "getSettings") { const ix = instances[m.context]; send({ event: "sendToPropertyInspector", context: m.context, payload: ix ? ix.s : DEF }); } break;
+    case "willAppear": {
+      start(m.context, Object.assign({}, DEF, m.payload?.settings || {}));
+      break;
+    }
+    case "willDisappear": {
+      stop(m.context);
+      break;
+    }
+    case "didReceiveSettings":
+    case "setSettings": {
+      const ns = Object.assign({}, DEF, m.payload?.settings || m.payload || {});
+      log(`Settings update ${m.context} city="${ns.city}" interval=${ns.refreshInterval}`);
+      start(m.context, ns);
+      break;
+    }
+    case "keyDown":
+    case "keyUp":
+    case "dialPress": {
+      const s = instances[m.context]?.s || Object.assign({}, DEF, m.payload?.settings || {});
+      log(`Manual refresh ${m.context}`);
+      loadingImg(m.context);
+      fetchAndRender(m.context, s);
+      break;
+    }
+    case "propertyInspectorDidAppear": {
+      const i = instances[m.context];
+      send({ event: "sendToPropertyInspector", context: m.context, payload: i ? i.s : DEF });
+      break;
+    }
+    case "sendToPlugin": {
+      const ev = m.payload && m.payload.event;
+      if (ev === "getSettings") {
+        const ix = instances[m.context];
+        send({ event: "sendToPropertyInspector", context: m.context, payload: ix ? ix.s : DEF });
+      } else if (ev === "updateSettings") {
+        const ns = Object.assign({}, DEF, m.payload.settings || {});
+        log(`PI updateSettings ${m.context} city="${ns.city}"`);
+        start(m.context, ns);
+      } else if (ev === "refresh") {
+        const s = instances[m.context]?.s;
+        if (s) { loadingImg(m.context); fetchAndRender(m.context, s); }
+      }
+      break;
+    }
   }
 });
 ws.on("close", () => { log("WS closed"); setTimeout(() => process.exit(0), 1000); });
