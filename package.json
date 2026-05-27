@@ -1,6 +1,6 @@
 {
   "name": "opendeck-weather",
-  "version": "1.9.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Live weather widget for OpenDeck powered by OpenWeatherMap",
   "main": "index.js",
@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node index.js",
-    "log": "tail -f plugin.log",
+    "log": "tail -f \"$HOME/.config/opendeck/plugins/com.plungarini.weather.sdPlugin/plugin.log\"",
+    "sync": "rsync -a --delete --exclude=node_modules --exclude=plugin.log --exclude=.git ./ \"$HOME/.config/opendeck/plugins/com.plungarini.weather.sdPlugin/\"",
     "clean": "rm -rf node_modules package-lock.json",
     "preinstall": "echo 'Run: npm install --ignore-scripts'"
   },

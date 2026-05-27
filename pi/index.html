@@ -203,6 +203,13 @@ function saveSettings() {
   };
 
   _pi_ws.send(JSON.stringify({ event: "setSettings", context: _pi_ctx, payload: payload }));
+  // Some OpenDeck versions don't echo didReceiveSettings back to the plugin,
+  // so push the new settings directly via sendToPlugin too.
+  _pi_ws.send(JSON.stringify({
+    event: "sendToPlugin",
+    context: _pi_ctx,
+    payload: { event: "updateSettings", settings: payload }
+  }));
   status.textContent = "Settings saved!";
   status.className = "status ok";
   setTimeout(() => { status.textContent = ""; status.className = "status"; }, 2500);
