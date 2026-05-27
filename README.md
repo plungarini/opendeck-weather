@@ -22,8 +22,7 @@ Live weather widget for [OpenDeck](https://opendeck.ai) / Elgato Stream Deck pow
 
 ```bash
 # Clone the repo
-git clone <repo-url> weather
-cd weather
+git clone https://github.com/plungarini/opendeck-weather/
 
 # Install dependencies
 npm install
@@ -48,10 +47,10 @@ Restart OpenDeck. The Weather action will appear in the action list under the "W
 
 ### Display Styles
 
-| Style | Preview | Description |
-|-------|---------|-------------|
-| **Icon** | ☀ 24°C | Weather icon with optional temperature below |
-| **Text** | 24° | Large temperature with city name |
+| Style    | Preview | Description                                  |
+| -------- | ------- | -------------------------------------------- |
+| **Icon** | ☀ 24°C  | Weather icon with optional temperature below |
+| **Text** | 24°     | Large temperature with city name             |
 
 ### Day/Night Colors
 
@@ -102,14 +101,14 @@ The plugin listens on a WebSocket at `ws://127.0.0.1:<port>` and communicates us
 
 All settings are configured per-action via the Property Inspector. No manual config files needed.
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| API Key | OpenWeatherMap API key | — |
-| City | City name (e.g. `London,UK`) | — |
-| Units | `metric`, `imperial`, or `standard` | metric |
-| Style | `icon` or `text` | icon |
-| Show Temp | Show temperature below icon (icon style only) | enabled |
-| Refresh Interval | Seconds between refreshes (min 30) | 3600 (1 hour) |
+| Setting          | Description                                   | Default       |
+| ---------------- | --------------------------------------------- | ------------- |
+| API Key          | OpenWeatherMap API key                        | —             |
+| City             | City name (e.g. `London,UK`)                  | —             |
+| Units            | `metric`, `imperial`, or `standard`           | metric        |
+| Style            | `icon` or `text`                              | icon          |
+| Show Temp        | Show temperature below icon (icon style only) | enabled       |
+| Refresh Interval | Seconds between refreshes (min 30)            | 3600 (1 hour) |
 
 ## License
 
